@@ -38,7 +38,11 @@ def app_create_txn():
                                     gen="testnet-v1.0",
                                     gh="SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",flat_fee=True)
     txn = algosdk.future.transaction.ApplicationCreateTxn(sender="YK54TGVZ37C7P76GKLXTY2LAH2522VD3U2434HRKE7NMXA65VHJVLFVOE4",
-                                                         sp=local_sp, approval_program=approve_app, on_complete=transaction.OnComplete.NoOpOC.real,clear_program= clear_pgm, global_schema=global_schema, foreign_apps=[55], foreign_assets=[31566704], accounts=["7PKXMJB2577SQ6R6IGYRAZQ27TOOOTIGTOQGJB3L5SGZFBVVI4AHMKLCEI", "NWBZBIROXZQEETCDKX6IZVVBV4EY637KCIX56LE5EHIQERCTSDYGXWG6PU"],
+                                                         sp=local_sp, approval_program=approve_app, on_complete=transaction.OnComplete.NoOpOC.real,clear_program= clear_pgm, global_schema=global_schema, 
+                                                         foreign_apps=[55,22], foreign_assets=[31566704,31566708], accounts=["7PKXMJB2577SQ6R6IGYRAZQ27TOOOTIGTOQGJB3L5SGZFBVVI4AHMKLCEI",
+                                                                                                                            "NWBZBIROXZQEETCDKX6IZVVBV4EY637KCIX56LE5EHIQERCTSDYGXWG6PU",
+                                                                                                                            "RP7BOFGBCPNHWPRJEGPNNQRNC3WXJUUAVSBTHMGUXLF36IEHSBGJOHOYZ4",
+                                                                                                                            "LHHQJ6UMXRGEPXBVFKT7SY26BQOIK64VVPCLVRL3RNQLX5ZMBYG6ZHZMBE"],
                                                          app_args=[b'\x00\x00\0x00\x00',b'\x02\x00\0x00\x00'],
                                                          local_schema=local_schema )
     return txn
@@ -51,7 +55,10 @@ def app_call_txn():
                                     gen="testnet-v1.0",
                                     gh="SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",flat_fee=True)
     txn = algosdk.future.transaction.ApplicationCallTxn(sender="YK54TGVZ37C7P76GKLXTY2LAH2522VD3U2434HRKE7NMXA65VHJVLFVOE4", sp=local_sp, index=68,
-                                                        foreign_apps=[55], foreign_assets=[31566704], accounts=["7PKXMJB2577SQ6R6IGYRAZQ27TOOOTIGTOQGJB3L5SGZFBVVI4AHMKLCEI","NWBZBIROXZQEETCDKX6IZVVBV4EY637KCIX56LE5EHIQERCTSDYGXWG6PU"],
+                                                        foreign_apps=[55,22], foreign_assets=[31566704,31566708], accounts=["7PKXMJB2577SQ6R6IGYRAZQ27TOOOTIGTOQGJB3L5SGZFBVVI4AHMKLCEI",
+                                                                                                                            "NWBZBIROXZQEETCDKX6IZVVBV4EY637KCIX56LE5EHIQERCTSDYGXWG6PU",
+                                                                                                                            "RP7BOFGBCPNHWPRJEGPNNQRNC3WXJUUAVSBTHMGUXLF36IEHSBGJOHOYZ4",
+                                                                                                                            "LHHQJ6UMXRGEPXBVFKT7SY26BQOIK64VVPCLVRL3RNQLX5ZMBYG6ZHZMBE"],
                                                         app_args=[b'\x00\x00\0x00\x00',b'\x02\x00\0x00\x00'],
                                                         on_complete=transaction.OnComplete.NoOpOC.real )
     return txn
@@ -79,9 +86,13 @@ def get_expected_messages_for_call_pgm(current_txn):
                  ['app id', str(current_txn.index)],
                  ['on completion', operation_text.lower()],
                  ['foreign app 0', str(current_txn.foreign_apps[0])],
+                 ['foreign app 1', str(current_txn.foreign_apps[1])],
                  ['foreign asset 0', str(current_txn.foreign_assets[0])],
+                 ['foreign asset 1', str(current_txn.foreign_assets[1])],
                  ['app account 0', str(current_txn.accounts[0]).lower()],
                  ['app account 1', str(current_txn.accounts[1]).lower()],
+                 ['app account 2', str(current_txn.accounts[2]).lower()],
+                 ['app account 3', str(current_txn.accounts[3]).lower()],
                  ['app arg 0 (sha256)', hash_bytes(current_txn.app_args[0]).lower()],
                  ['app arg 1 (sha256)', hash_bytes(current_txn.app_args[1]).lower()],
                  ['sign', 'transaction']]
@@ -105,7 +116,9 @@ def get_expected_messages_for_create_pgm(current_txn):
 
 txn_labels = {
     'review', 'txn type','sender','fee (alg)', 'genesis id', 'genesis hash', 'group id', 'app id', 'on completion', 
-    'foreign app 0', 'foreign asset 0','app account 0', 'app account 1', 'app arg 0 (sha256)', 'app arg 1 (sha256)',
+    'foreign app 0', 'foreign app 1', 'foreign asset 0', 'foreign asset 1', 
+    'app account 0', 'app account 1', 'app account 2', 'app account 3', 
+    'app arg 0 (sha256)', 'app arg 1 (sha256)',
     'global schema', 'local schema',  'apprv (sha256)', 'clear (sha256)','sign'
 } 
 
@@ -147,7 +160,7 @@ def test_sign_msgpack_call_app_long_clear_app(dongle, app_create_txn):
         
     assert excinfo.value.sw == 0x6e00
 
-def test_sign_msgpack_call_app_more_than_one_foreign_app(dongle, app_call_txn):
+def test_sign_msgpack_call_app_more_than_two_foreign_app(dongle, app_call_txn):
     """
     """
     app_call_txn.foreign_apps.append(81)
@@ -158,7 +171,7 @@ def test_sign_msgpack_call_app_more_than_one_foreign_app(dongle, app_call_txn):
     assert excinfo.value.sw == 0x6e00
 
 
-def test_sign_msgpack_call_app_more_than_one_foreign_asset(dongle, app_call_txn):
+def test_sign_msgpack_call_app_more_than_two_foreign_asset(dongle, app_call_txn):
     """
     """
     app_call_txn.foreign_assets.append(6547014)
@@ -168,7 +181,7 @@ def test_sign_msgpack_call_app_more_than_one_foreign_asset(dongle, app_call_txn)
         
     assert excinfo.value.sw == 0x6e00
 
-def test_sign_msgpack_call_app_more_than_two_accounts(dongle, app_call_txn):
+def test_sign_msgpack_call_app_more_than_four_accounts(dongle, app_call_txn):
     """
     """
     app_call_txn.accounts.append("R4DCCBODM4L7C6CKVOV5NYDPEYS2G5L7KC7LUYPLUCKBCOIZMYJPFUDTKE")

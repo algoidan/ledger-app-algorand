@@ -527,6 +527,14 @@ static int step_application_account_1(void) {
   return step_application_account(1);
 }
 
+static int step_application_account_2(void) {
+  return step_application_account(2);
+}
+
+static int step_application_account_3(void) {
+  return step_application_account(3);
+}
+
 static int step_application_foreign_app(unsigned int idx) {
   if (idx >= current_txn.application.num_foreign_apps) {
     return 0;
@@ -540,6 +548,10 @@ static int step_application_foreign_app_0(void) {
   return step_application_foreign_app(0);
 }
 
+static int step_application_foreign_app_1(void) {
+  return step_application_foreign_app(1);
+}
+
 static int step_application_foreign_asset(unsigned int idx) {
   if (idx >= current_txn.application.num_foreign_assets) {
     return 0;
@@ -551,6 +563,10 @@ static int step_application_foreign_asset(unsigned int idx) {
 
 static int step_application_foreign_asset_0(void) {
   return step_application_foreign_asset(0);
+}
+
+static int step_application_foreign_asset_1(void) {
+  return step_application_foreign_asset(1);
 }
 
 static int step_application_arg(unsigned int idx) {
@@ -620,9 +636,13 @@ screen_t const screen_table[SCREEN_NUM] = {
   {"App ID", &step_application_id, APPLICATION},
   {"On completion", &step_application_oncompletion, APPLICATION},
   {"Foreign app 0", &step_application_foreign_app_0, APPLICATION},
+  {"Foreign app 1", &step_application_foreign_app_1, APPLICATION},
   {"Foreign asset 0", &step_application_foreign_asset_0, APPLICATION},
+  {"Foreign asset 1", &step_application_foreign_asset_1, APPLICATION},
   {"App account 0", &step_application_account_0, APPLICATION},
   {"App account 1", &step_application_account_1, APPLICATION},
+  {"App account 2", &step_application_account_2, APPLICATION},
+  {"App account 3", &step_application_account_3, APPLICATION},
   {"App arg 0 (sha256)", &step_application_arg_0, APPLICATION},
   {"App arg 1 (sha256)", &step_application_arg_1, APPLICATION},
   {"Global schema", &step_application_global_schema, APPLICATION},
