@@ -73,9 +73,11 @@ class SpeculosContainer:
             '--button-port 10001',
             '--log-level button:DEBUG',
             '--sdk 2.0',
+            '--model nanos',
             '/app/%s' % os.path.basename(self.app)
         ]
-        c = self.docker.create(image='ledgerhq/speculos',
+        logging.info("running container with args: %s",args)
+        c = self.docker.create(image='speculos',
                                command=' '.join(args),
                                volumes={appdir: {'bind': '/app', 'mode': 'ro'}},
                                ports={
@@ -83,6 +85,7 @@ class SpeculosContainer:
                                    '10000/tcp': self.automation_port,
                                    '10001/tcp': self.button_port,
                                })
+
         c.start()
         return c
 
@@ -94,12 +97,15 @@ class SpeculosContainer:
 
         def do_log():
             for log in container.logs(stream=True, follow=True):
+                log_parsed = log.decode('utf-8').strip('\n')
                 nonlocal started
-                if not started:
-                    with cv:
-                        started = True
-                        cv.notify()
-                logger.info(log.decode('utf-8').strip('\n'))
+                if not started:                    
+                    # waiting for log message from the container
+                    if log_parsed.find('speculos launcher revision') != -1:
+                        with cv:
+                            started = True
+                            cv.notify()
+                logger.info(log_parsed)
 
         t = threading.Thread(target=do_log, daemon=True)
         t.start()
