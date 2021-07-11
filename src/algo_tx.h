@@ -80,8 +80,15 @@ struct state_schema {
 #define MAX_ARGLEN 32
 #define MAX_FOREIGN_APPS 2 
 #define MAX_FOREIGN_ASSETS 2
+
+#if defined(TARGET_NANOX)
+#define MAX_APPROV_LEN 2048
+#define MAX_CLEAR_LEN 2048
+#else
 #define MAX_APPROV_LEN 128
 #define MAX_CLEAR_LEN 32
+#endif
+
 
 struct txn_application {
   uint64_t id;

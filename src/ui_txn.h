@@ -13,7 +13,7 @@ typedef struct {
 } screen_t;
 
 #if defined(TARGET_NANOX)
-#define TNX_BUFFER_SIZE 2048
+#define TNX_BUFFER_SIZE 5500
 #else
 #define TNX_BUFFER_SIZE 900
 #endif
