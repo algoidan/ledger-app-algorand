@@ -43,7 +43,7 @@ def app_create_txn():
                                                                                                                             "NWBZBIROXZQEETCDKX6IZVVBV4EY637KCIX56LE5EHIQERCTSDYGXWG6PU",
                                                                                                                             "RP7BOFGBCPNHWPRJEGPNNQRNC3WXJUUAVSBTHMGUXLF36IEHSBGJOHOYZ4",
                                                                                                                             "LHHQJ6UMXRGEPXBVFKT7SY26BQOIK64VVPCLVRL3RNQLX5ZMBYG6ZHZMBE"],
-                                                         app_args=[b'\x00\x00\0x00\x00',b'\x02\x00\0x00\x00'],
+                                                         app_args=[],
                                                          local_schema=local_schema )
     return txn
 
@@ -59,7 +59,7 @@ def app_call_txn():
                                                                                                                             "NWBZBIROXZQEETCDKX6IZVVBV4EY637KCIX56LE5EHIQERCTSDYGXWG6PU",
                                                                                                                             "RP7BOFGBCPNHWPRJEGPNNQRNC3WXJUUAVSBTHMGUXLF36IEHSBGJOHOYZ4",
                                                                                                                             "LHHQJ6UMXRGEPXBVFKT7SY26BQOIK64VVPCLVRL3RNQLX5ZMBYG6ZHZMBE"],
-                                                        app_args=[b'\x00\x00\0x00\x00',b'\x02\x00\0x00\x00'],
+                                                        app_args=[],
                                                         on_complete=transaction.OnComplete.NoOpOC.real )
     return txn
 
@@ -93,8 +93,6 @@ def get_expected_messages_for_call_pgm(current_txn):
                  ['app account 1', str(current_txn.accounts[1]).lower()],
                  ['app account 2', str(current_txn.accounts[2]).lower()],
                  ['app account 3', str(current_txn.accounts[3]).lower()],
-                 ['app arg 0 (sha256)', hash_bytes(current_txn.app_args[0]).lower()],
-                 ['app arg 1 (sha256)', hash_bytes(current_txn.app_args[1]).lower()],
                  ['sign', 'transaction']]
                  
     return messages
@@ -118,7 +116,7 @@ txn_labels = {
     'review', 'txn type','sender','fee (alg)', 'genesis id', 'genesis hash', 'group id', 'app id', 'on completion', 
     'foreign app 0', 'foreign app 1', 'foreign asset 0', 'foreign asset 1', 
     'app account 0', 'app account 1', 'app account 2', 'app account 3', 
-    'app arg 0 (sha256)', 'app arg 1 (sha256)',
+    'app arg 0 (sha256)', 'app arg 1 (sha256)', 'app arg 2 (sha256)', 'app arg 3 (sha256)',
     'global schema', 'local schema',  'apprv (sha256)', 'clear (sha256)','sign'
 } 
 
@@ -185,16 +183,6 @@ def test_sign_msgpack_call_app_more_than_four_accounts(dongle, app_call_txn):
     """
     """
     app_call_txn.accounts.append("R4DCCBODM4L7C6CKVOV5NYDPEYS2G5L7KC7LUYPLUCKBCOIZMYJPFUDTKE")
-    decoded_txn= base64.b64decode(algosdk.encoding.msgpack_encode(app_call_txn))
-    with pytest.raises(speculos.CommException) as excinfo:
-        dongle.exchange(txn_utils.sign_algo_txn(dongle, decoded_txn))
-        
-    assert excinfo.value.sw == 0x6e00
-
-def test_sign_msgpack_call_app_more_than_two_args(dongle, app_call_txn):
-    """
-    """
-    app_call_txn.app_args.append(b'\0x02\0x00\0x00\0x00')
     decoded_txn= base64.b64decode(algosdk.encoding.msgpack_encode(app_call_txn))
     with pytest.raises(speculos.CommException) as excinfo:
         dongle.exchange(txn_utils.sign_algo_txn(dongle, decoded_txn))
@@ -304,3 +292,176 @@ def test_sign_msgpack_group_id_validate_display(dongle, app_call_txn, app_create
 
     verify_key = nacl.signing.VerifyKey(pubKey)
     verify_key.verify(smessage=b'TX' + decoded_txn, signature=txnSig)
+
+
+
+def test_sign_msgpack_call_app_different_len_args(dongle, app_call_txn):
+    """
+    """
+
+    apdu = struct.pack('>BBBBB', 0x80, 0x3, 0x0, 0x0, 0x0)
+    pubKey = dongle.exchange(apdu)
+
+    arg0 = b'\x02\x00\x00\x00\x67\x23\x12\x67'
+    arg1 = b'\x45\x02'
+    arg2 = b'\x65'
+    arg3 = b'\x65\x91\x53\x61\x11\x65\x6C\x76\x1D\x07\xAB'
+
+    app_call_txn.app_args = [arg0, arg1, arg2, arg3]
+
+    decoded_txn= base64.b64decode(algosdk.encoding.msgpack_encode(app_call_txn))
+    with dongle.screen_event_handler(ui_interaction.confirm_on_lablel, txn_labels, conf_label):
+        logging.info(decoded_txn)
+        txnSig = txn_utils.sign_algo_txn(dongle, decoded_txn)
+        messages = dongle.get_messages()
+
+    verify_key = nacl.signing.VerifyKey(pubKey)
+    verify_key.verify(smessage=b'TX' + decoded_txn, signature=txnSig)
+
+    exp_messages = get_expected_messages_for_call_pgm(app_call_txn)
+
+    exp_messages.insert(len(exp_messages)-1,['app arg 0 (sha256)', 
+                hash_bytes(app_call_txn.app_args[0]).lower()])
+    exp_messages.insert(len(exp_messages)-1,['app arg 1 (sha256)', 
+                hash_bytes(app_call_txn.app_args[1]).lower()])
+    exp_messages.insert(len(exp_messages)-1,['app arg 2 (sha256)', 
+                hash_bytes(app_call_txn.app_args[2]).lower()])
+    exp_messages.insert(len(exp_messages)-1,['app arg 3 (sha256)', 
+                hash_bytes(app_call_txn.app_args[3]).lower()])
+    logging.info(messages)
+    logging.info(exp_messages)
+    
+    assert exp_messages == messages
+
+
+
+def test_sign_msgpack_call_app_args_zero_size_arg(dongle, app_call_txn):
+    """
+    """
+
+    apdu = struct.pack('>BBBBB', 0x80, 0x3, 0x0, 0x0, 0x0)
+    pubKey = dongle.exchange(apdu)
+
+    arg0 = b'\x02\x00\x00\x00\x67\x23\x12\x67'
+    arg1 = b''
+    arg2 = b'\x65'
+    arg3 = b''
+    app_call_txn.app_args = [arg0, arg1, arg2, arg3]
+
+    decoded_txn= base64.b64decode(algosdk.encoding.msgpack_encode(app_call_txn))
+    with dongle.screen_event_handler(ui_interaction.confirm_on_lablel, txn_labels, conf_label):
+        logging.info(decoded_txn)
+        txnSig = txn_utils.sign_algo_txn(dongle, decoded_txn)
+        messages = dongle.get_messages()
+
+    verify_key = nacl.signing.VerifyKey(pubKey)
+    verify_key.verify(smessage=b'TX' + decoded_txn, signature=txnSig)
+
+    exp_messages = get_expected_messages_for_call_pgm(app_call_txn)
+
+    exp_messages.insert(len(exp_messages)-1,['app arg 0 (sha256)', 
+                hash_bytes(app_call_txn.app_args[0]).lower()])
+    exp_messages.insert(len(exp_messages)-1,['app arg 1 (sha256)', 
+                hash_bytes(app_call_txn.app_args[1]).lower()])
+    exp_messages.insert(len(exp_messages)-1,['app arg 2 (sha256)', 
+                hash_bytes(app_call_txn.app_args[2]).lower()])
+    exp_messages.insert(len(exp_messages)-1,['app arg 3 (sha256)', 
+                hash_bytes(app_call_txn.app_args[3]).lower()])
+    logging.info(messages)
+    logging.info(exp_messages)
+    
+    assert exp_messages == messages
+
+
+def test_sign_msgpack_call_app_args_pass_limit(dongle, app_call_txn):
+    """
+    """
+    arg0 = b'\x02\x00\x00\x00\x67\x23\x12\x67'
+    arg1 = b'\x45\x02'
+    arg2 = b'\x65'
+    arg3 = b'\x65\x91\x53\x61\x11\x65\x6C\x76\x1D\x07\xAB'
+    arg4 = b'\xAA'
+
+
+    app_call_txn.app_args = [arg0, arg1, arg2, arg3, arg4]
+
+    decoded_txn= base64.b64decode(algosdk.encoding.msgpack_encode(app_call_txn))
+    with pytest.raises(speculos.CommException) as excinfo:
+        dongle.exchange(txn_utils.sign_algo_txn(dongle, decoded_txn))
+        
+    assert excinfo.value.sw == 0x6e00
+
+
+def test_sign_msgpack_call_app_args_pass_total_len(dongle, app_call_txn):
+    """
+    """
+    arg0 = b'\x02\x00\x00\x00\x67\x23\x12\x67'
+    arg1 = b'\xAA'*(32-len(arg0) +1)
+
+    app_call_txn.app_args = [arg0, arg1]
+
+    decoded_txn= base64.b64decode(algosdk.encoding.msgpack_encode(app_call_txn))
+    with pytest.raises(speculos.CommException) as excinfo:
+        dongle.exchange(txn_utils.sign_algo_txn(dongle, decoded_txn))
+        
+    assert excinfo.value.sw == 0x6e00
+
+
+# because we don't have lot of RAM on the NanoS we need to check that near limit tnx works fine
+def test_sign_msgpack_create_app_check_limit(dongle):
+    """
+    """
+    apdu = struct.pack('>BBBBB', 0x80, 0x3, 0x0, 0x0, 0x0)
+    pubKey = dongle.exchange(apdu)
+
+
+    
+    approve_app = b'\x02'*127
+    clear_pgm = b'\x02'*31
+
+
+    arg0 = b'\x02\x00\x00\x00\x67\x23\x12\x67'
+    arg1 = b'\xAA'*(32-len(arg0))
+
+    
+    local_ints = 2
+    local_bytes = 5
+    global_ints = 24 
+    global_bytes = 1
+    global_schema = transaction.StateSchema(global_ints, global_bytes)
+    local_schema = transaction.StateSchema(local_ints, local_bytes)
+    local_sp = transaction.SuggestedParams(fee= 2100, first=6002000, last=6003000,
+                                    gen="testnet-v1.0",
+                                    gh="SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=",flat_fee=True)
+    app_create_txn = algosdk.future.transaction.ApplicationCreateTxn(sender="YK54TGVZ37C7P76GKLXTY2LAH2522VD3U2434HRKE7NMXA65VHJVLFVOE4",
+                                                         sp=local_sp, approval_program=approve_app, on_complete=transaction.OnComplete.NoOpOC.real,clear_program= clear_pgm, global_schema=global_schema, 
+                                                         foreign_apps=[55,22], foreign_assets=[31566704,31566708], accounts=["7PKXMJB2577SQ6R6IGYRAZQ27TOOOTIGTOQGJB3L5SGZFBVVI4AHMKLCEI",
+                                                                                                                            "NWBZBIROXZQEETCDKX6IZVVBV4EY637KCIX56LE5EHIQERCTSDYGXWG6PU",
+                                                                                                                            "RP7BOFGBCPNHWPRJEGPNNQRNC3WXJUUAVSBTHMGUXLF36IEHSBGJOHOYZ4",
+                                                                                                                            "LHHQJ6UMXRGEPXBVFKT7SY26BQOIK64VVPCLVRL3RNQLX5ZMBYG6ZHZMBE"],
+                                                         app_args=[arg0, arg1],
+                                                         local_schema=local_schema )
+
+    decoded_txn= base64.b64decode(algosdk.encoding.msgpack_encode(app_create_txn))
+    with dongle.screen_event_handler(ui_interaction.confirm_on_lablel, txn_labels, conf_label):
+        logging.info(decoded_txn)
+        txnSig = txn_utils.sign_algo_txn(dongle, decoded_txn)
+        messages = dongle.get_messages()
+
+
+    exp_messages = get_expected_messages_for_create_pgm(app_create_txn)
+    logging.info(messages)
+    logging.info(exp_messages)
+
+
+    exp_messages.insert(len(exp_messages)-5,['app arg 0 (sha256)', 
+                hash_bytes(app_create_txn.app_args[0]).lower()])
+    exp_messages.insert(len(exp_messages)-5,['app arg 1 (sha256)', 
+                hash_bytes(app_create_txn.app_args[1]).lower()])
+
+    assert  exp_messages  == messages
+
+    verify_key = nacl.signing.VerifyKey(pubKey)
+    verify_key.verify(smessage=b'TX' + decoded_txn, signature=txnSig)
+
+

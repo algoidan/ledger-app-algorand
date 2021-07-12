@@ -194,7 +194,7 @@ map_kv_accts(uint8_t **p, uint8_t *e, char *key, uint8_t accounts[][32], size_t 
 }
 
 static int
-map_kv_args(uint8_t **p, uint8_t *e, char *key, uint8_t app_args[][MAX_ARGLEN], size_t app_args_len[], size_t num_app_args)
+map_kv_args(uint8_t **p, uint8_t *e, char *key, uint8_t app_args[MAX_ARGLEN], size_t app_args_len[], size_t num_app_args)
 {
   if (num_app_args == 0) {
     return 0;
@@ -214,8 +214,11 @@ map_kv_args(uint8_t **p, uint8_t *e, char *key, uint8_t app_args[][MAX_ARGLEN], 
   }
 
   put_byte(p, e, FIXARR_0);
+  uint8_t* arg_ptr = app_args;
+
   for (size_t i = 0; i < num_app_args; i++) {
-    encode_bin(p, e, app_args[i], app_args_len[i]);
+    encode_bin(p, e, arg_ptr, app_args_len[i]);
+    arg_ptr += app_args_len[i];
     arrbase[0]++;
   }
 

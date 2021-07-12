@@ -290,7 +290,7 @@ decode_accounts(uint8_t **bufp, uint8_t *buf_end, uint8_t accounts[][32], size_t
 }
 
 static bool
-decode_app_args(uint8_t **bufp, uint8_t *buf_end, uint8_t app_args[][MAX_ARGLEN], size_t app_args_len[], size_t *num_args, size_t max_args) {
+decode_app_args(uint8_t **bufp, uint8_t *buf_end, uint8_t app_args[MAX_ARGLEN], size_t app_args_len[], size_t *num_args, size_t max_args, size_t max_args_total_size) {
   size_t arr_count;
 
   CHECK_ERROR(decode_fixsz(bufp, buf_end, FIXARR_0, FIXARR_15, &arr_count));
@@ -299,8 +299,13 @@ decode_app_args(uint8_t **bufp, uint8_t *buf_end, uint8_t app_args[][MAX_ARGLEN]
     return false;
   }
 
+  size_t total_args_len = 0;
+  uint8_t* arg_ptr = app_args;
+
   for (size_t i = 0; i < arr_count; i++) {
-    CHECK_ERROR(decode_bin_var(bufp, buf_end, app_args[i], &app_args_len[i], sizeof(app_args[0])));
+    CHECK_ERROR(decode_bin_var(bufp, buf_end, arg_ptr, &app_args_len[i], max_args_total_size - total_args_len));
+    arg_ptr +=  app_args_len[i];
+    total_args_len += app_args_len[i];
   }
 
   *num_args = arr_count;
@@ -441,7 +446,7 @@ static bool tx_decode_helper(uint8_t *buf, uint8_t *buf_end, txn_t *t)
     } else if (!strcmp(key, "apid")) {
       CHECK_ERROR(decode_uint64(&buf, buf_end, &t->application.id));
     } else if (!strcmp(key, "apaa")) {
-      CHECK_ERROR(decode_app_args(&buf, buf_end, t->application.app_args, t->application.app_args_len, &t->application.num_app_args, COUNT(t->application.app_args)));
+      CHECK_ERROR(decode_app_args(&buf, buf_end, t->application.app_args, t->application.app_args_len, &t->application.num_app_args, COUNT(t->application.app_args_len), COUNT(t->application.app_args) ));
     } else if (!strcmp(key, "apap")) {
       CHECK_ERROR(decode_bin_var(&buf, buf_end, t->application.aprog, &t->application.aprog_len, sizeof(t->application.aprog)));
     } else if (!strcmp(key, "apsu")) {
@@ -490,11 +495,15 @@ static bool tx_decode_helper(uint8_t *buf, uint8_t *buf_end, txn_t *t)
       snprintf(decode_err, sizeof(decode_err), "invalid num foreign assets");
       return false;
     }
+
+    size_t args_sum = 0;
     for (unsigned int i = 0; i < COUNT(t->application.app_args_len); i++) {
-      if (t->application.app_args_len[i] > COUNT(t->application.app_args[0])) {
-        snprintf(decode_err, sizeof(decode_err), "invalid arg len");
-        return false;
-      }
+      args_sum += t->application.app_args_len[i];
+    }
+    
+    if (args_sum > COUNT(t->application.app_args)) {
+      snprintf(decode_err, sizeof(decode_err), "invalid arg len");
+      return false;
     }
   }
 

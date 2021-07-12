@@ -574,7 +574,13 @@ static int step_application_arg(unsigned int idx) {
     return 0;
   }
 
-  ui_text_put(b64hash_data(current_txn.application.app_args[idx], current_txn.application.app_args_len[idx]));
+  // finding the start of the arg[idx]
+  size_t arg_offset = 0;
+  for (size_t i = 0; i < idx; i++){
+      arg_offset += current_txn.application.app_args_len[i];
+  }
+
+  ui_text_put(b64hash_data(current_txn.application.app_args + arg_offset, current_txn.application.app_args_len[idx]));
   return 1;
 }
 
@@ -584,6 +590,14 @@ static int step_application_arg_0(void) {
 
 static int step_application_arg_1(void) {
   return step_application_arg(1);
+}
+
+static int step_application_arg_2(void) {
+  return step_application_arg(2);
+}
+
+static int step_application_arg_3(void) {
+  return step_application_arg(3);
 }
 
 screen_t const screen_table[SCREEN_NUM] = {
@@ -645,6 +659,8 @@ screen_t const screen_table[SCREEN_NUM] = {
   {"App account 3", &step_application_account_3, APPLICATION},
   {"App arg 0 (sha256)", &step_application_arg_0, APPLICATION},
   {"App arg 1 (sha256)", &step_application_arg_1, APPLICATION},
+  {"App arg 2 (sha256)", &step_application_arg_2, APPLICATION},
+  {"App arg 3 (sha256)", &step_application_arg_3, APPLICATION},
   {"Global schema", &step_application_global_schema, APPLICATION},
   {"Local schema", &step_application_local_schema, APPLICATION},
   {"Apprv (sha256)", &step_application_approve_prog, APPLICATION},

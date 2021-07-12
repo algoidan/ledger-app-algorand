@@ -76,7 +76,7 @@ struct state_schema {
 };
 
 #define MAX_ACCT 4
-#define MAX_ARG 2
+#define MAX_ARG 4
 #define MAX_ARGLEN 32
 #define MAX_FOREIGN_APPS 2 
 #define MAX_FOREIGN_ASSETS 2
@@ -103,7 +103,7 @@ struct txn_application {
   uint64_t foreign_assets[MAX_FOREIGN_ASSETS];
   size_t num_foreign_assets;
 
-  uint8_t app_args[MAX_ARG][MAX_ARGLEN];
+  uint8_t app_args[MAX_ARGLEN];
   size_t app_args_len[MAX_ARG];
   size_t num_app_args;
 
