@@ -600,6 +600,51 @@ static int step_application_arg_3(void) {
   return step_application_arg(3);
 }
 
+static int step_application_arg_4(void) {
+  return step_application_arg(4);
+}
+
+static int step_application_arg_5(void) {
+  return step_application_arg(5);
+}
+
+static int step_application_arg_6(void) {
+  return step_application_arg(6);
+}
+
+static int step_application_arg_7(void) {
+  return step_application_arg(7);
+}
+
+
+static int step_application_arg_8(void) {
+  return step_application_arg(8);
+}
+
+static int step_application_arg_9(void) {
+  return step_application_arg(9);
+}
+
+static int step_application_arg_10(void) {
+  return step_application_arg(10);
+}
+
+static int step_application_arg_11(void) {
+  return step_application_arg(11);
+}
+
+static int step_application_arg_12(void) {
+  return step_application_arg(12);
+}
+
+static int step_application_arg_13(void) {
+  return step_application_arg(13);
+}
+
+static int step_application_arg_14(void) {
+  return step_application_arg(14);
+}
+
 screen_t const screen_table[SCREEN_NUM] = {
   {"Txn type", &step_txn_type, ALL_TYPES},
   {"Sender", &step_sender, ALL_TYPES},
@@ -661,6 +706,17 @@ screen_t const screen_table[SCREEN_NUM] = {
   {"App arg 1 (sha256)", &step_application_arg_1, APPLICATION},
   {"App arg 2 (sha256)", &step_application_arg_2, APPLICATION},
   {"App arg 3 (sha256)", &step_application_arg_3, APPLICATION},
+  {"App arg 4 (sha256)", &step_application_arg_4, APPLICATION},
+  {"App arg 5 (sha256)", &step_application_arg_5, APPLICATION},
+  {"App arg 6 (sha256)", &step_application_arg_6, APPLICATION},
+  {"App arg 7 (sha256)", &step_application_arg_7, APPLICATION},
+  {"App arg 8 (sha256)", &step_application_arg_8, APPLICATION},
+  {"App arg 9 (sha256)", &step_application_arg_9, APPLICATION},
+  {"App arg 10 (sha256)", &step_application_arg_10, APPLICATION},
+  {"App arg 11 (sha256)", &step_application_arg_11, APPLICATION},
+  {"App arg 12 (sha256)", &step_application_arg_12, APPLICATION},
+  {"App arg 13 (sha256)", &step_application_arg_13, APPLICATION},
+  {"App arg 14 (sha256)", &step_application_arg_14, APPLICATION}, 
   {"Global schema", &step_application_global_schema, APPLICATION},
   {"Local schema", &step_application_local_schema, APPLICATION},
   {"Apprv (sha256)", &step_application_approve_prog, APPLICATION},

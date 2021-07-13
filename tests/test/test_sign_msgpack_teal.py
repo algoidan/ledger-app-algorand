@@ -376,10 +376,10 @@ def test_sign_msgpack_call_app_args_zero_size_arg(dongle, app_call_txn):
 def test_sign_msgpack_call_app_args_pass_limit(dongle, app_call_txn):
     """
     """
-    arg0 = b'\x02\x00\x00\x00\x67\x23\x12\x67'
+    arg0 = b'\x02\x00'
     arg1 = b'\x45\x02'
     arg2 = b'\x65'
-    arg3 = b'\x65\x91\x53\x61\x11\x65\x6C\x76\x1D\x07\xAB'
+    arg3 = b'\x65\x91\x53'
     arg4 = b'\xAA'
 
 

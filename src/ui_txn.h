@@ -13,12 +13,12 @@ typedef struct {
 } screen_t;
 
 #if defined(TARGET_NANOX)
-#define TNX_BUFFER_SIZE 5500
+#define TNX_BUFFER_SIZE 7168
 #else
 #define TNX_BUFFER_SIZE 900
 #endif
 extern uint8_t msgpack_buf[TNX_BUFFER_SIZE];
 extern unsigned int msgpack_next_off;
 
-#define SCREEN_NUM 57
+#define SCREEN_NUM 68
 extern screen_t const screen_table[SCREEN_NUM];

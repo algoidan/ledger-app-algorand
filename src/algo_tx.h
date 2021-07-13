@@ -76,17 +76,20 @@ struct state_schema {
 };
 
 #define MAX_ACCT 4
-#define MAX_ARG 4
-#define MAX_ARGLEN 32
+
 #define MAX_FOREIGN_APPS 2 
 #define MAX_FOREIGN_ASSETS 2
 
 #if defined(TARGET_NANOX)
 #define MAX_APPROV_LEN 2048
 #define MAX_CLEAR_LEN 2048
+#define MAX_ARGLEN 2048
+#define MAX_ARG 15
 #else
 #define MAX_APPROV_LEN 128
 #define MAX_CLEAR_LEN 32
+#define MAX_ARGLEN 32
+#define MAX_ARG 4
 #endif
 
 
