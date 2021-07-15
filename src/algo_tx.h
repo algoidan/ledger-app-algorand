@@ -76,7 +76,6 @@ struct state_schema {
 };
 
 #define MAX_ACCT 4
-
 #define MAX_FOREIGN_APPS 2 
 #define MAX_FOREIGN_ASSETS 2
 

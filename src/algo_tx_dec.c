@@ -446,7 +446,7 @@ static bool tx_decode_helper(uint8_t *buf, uint8_t *buf_end, txn_t *t)
     } else if (!strcmp(key, "apid")) {
       CHECK_ERROR(decode_uint64(&buf, buf_end, &t->application.id));
     } else if (!strcmp(key, "apaa")) {
-      CHECK_ERROR(decode_app_args(&buf, buf_end, t->application.app_args, t->application.app_args_len, &t->application.num_app_args, COUNT(t->application.app_args_len), COUNT(t->application.app_args) ));
+      CHECK_ERROR(decode_app_args(&buf, buf_end, t->application.app_args, t->application.app_args_len, &t->application.num_app_args, COUNT(t->application.app_args_len), sizeof(t->application.app_args) ));
     } else if (!strcmp(key, "apap")) {
       CHECK_ERROR(decode_bin_var(&buf, buf_end, t->application.aprog, &t->application.aprog_len, sizeof(t->application.aprog)));
     } else if (!strcmp(key, "apsu")) {
